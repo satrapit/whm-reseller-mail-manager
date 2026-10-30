@@ -1,0 +1,576 @@
+[%
+  USE Whostmgr;
+  SET extra_stylesheets = [];
+  IF locale.get_html_dir_attr() == 'rtl';
+    SET rtl_bootstrap = Whostmgr.find_file_url('/3rdparty/bootstrap-rtl/optimized/dist/css/bootstrap-rtl.min.css');
+    SET extra_stylesheets = [rtl_bootstrap];
+  END;
+  WRAPPER 'master_templates/master.tmpl'
+    header = locale.maketext('Reseller System Mail Manager')
+    theme = 'bootstrap'
+    stylesheets = extra_stylesheets
+    hide_header = 0
+    hide_navigation = 0
+    inside_frame_or_tab_or_popup = 0;
+%]
+<style>
+/* Scoped content styling only. WHM owns its header, navigation and footer. */
+.rsm-shell { max-width: 1360px; margin: 0 auto 32px; padding: 0 16px; box-sizing: border-box; }
+.rsm-shell .rsm-heading { margin: 8px 0 16px; }
+.rsm-shell .rsm-heading h1 { font-size: 24px; font-weight: 600; margin: 0 0 7px; line-height: 1.3; }
+.rsm-shell .rsm-lead { color: #5d7085; line-height: 1.55; margin: 0; }
+.rsm-shell .rsm-scope { color: #52697e; font-size: 13px; padding: 10px 14px; margin: 0 0 18px; border: 1px solid #dae3ec; border-left: 3px solid #6b9bcc; background: #f7f9fc; border-radius: 3px; }
+.rsm-shell .rsm-scope strong { color: #354e65; }
+.rsm-shell .rsm-scope details { margin-top: 5px; }
+.rsm-shell .rsm-scope summary { cursor: pointer; color: #2876aa; }
+.rsm-shell .rsm-tabs { margin: 16px 0 24px; }
+.rsm-shell .rsm-card { margin-bottom: 20px; }
+.rsm-shell .rsm-card > .panel-heading { font-weight: 600; background: #f8f9fa; }
+.rsm-shell .rsm-card .panel-body { padding: 19px; }
+.rsm-shell .rsm-metric { min-height: 110px; }
+.rsm-shell .rsm-metric .panel-body { padding: 17px 18px; }
+.rsm-shell .rsm-metric-label { font-size: 13px; color: #62758a; }
+.rsm-shell .rsm-metric-value { font-size: 27px; font-weight: 600; line-height: 1.4; margin-top: 7px; overflow-wrap: anywhere; }
+.rsm-shell .rsm-metric-value.rsm-value-text { font-size: 17px; padding-top: 4px; }
+.rsm-shell .rsm-help { display: block; color: #617489; font-size: 12px; line-height: 1.6; margin-top: 6px; }
+.rsm-shell .rsm-intro { color: #617489; margin-bottom: 15px; line-height: 1.6; }
+.rsm-shell .rsm-form { margin-bottom: 0; }
+.rsm-shell .rsm-field { max-width: 520px; }
+.rsm-shell .rsm-steps { margin: 0; padding-left: 21px; line-height: 1.85; }
+.rsm-shell .rsm-reseller { border: 1px solid #dae2eb; border-radius: 4px; margin-bottom: 14px; background: #fff; }
+.rsm-shell .rsm-reseller:last-child { margin-bottom: 0; }
+.rsm-shell .rsm-reseller-header { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; border-bottom: 1px solid #edf0f3; padding: 13px 16px; background: #fafbfc; }
+.rsm-shell .rsm-reseller-header h3 { display: inline; font-size: 15px; font-weight: 600; margin: 0 10px 0 0; }
+.rsm-shell .rsm-reseller-body { padding: 22px 24px 24px; }
+.rsm-shell .rsm-reseller-body > .row { margin-left: -12px; margin-right: -12px; }
+.rsm-shell .rsm-reseller-body > .row > [class*="col-"] { padding-left: 12px; padding-right: 12px; }
+.rsm-shell .rsm-reseller-body .form-group { margin-bottom: 16px; }
+.rsm-shell .rsm-reseller-body .checkbox { margin: 14px 0 18px; }
+.rsm-shell .rsm-verification { border-left: 1px solid #e6ebf1; padding-left: 24px; padding-right: 4px; min-height: 155px; }
+.rsm-shell .rsm-verification form { margin-top: 12px; }
+.rsm-shell .rsm-verification .rsm-help { margin-top: 10px; }
+.rsm-shell .rsm-verification h4 { font-size: 14px; font-weight: 600; margin: 0 0 9px; }
+.rsm-shell .rsm-challenge { margin: 10px 0; }
+.rsm-shell .rsm-challenge code, .rsm-shell .rsm-code { display: block; padding: 8px 10px; color: #344a60; background: #f6f8fa; border: 1px solid #e4e8ed; border-radius: 3px; white-space: pre-wrap; overflow-wrap: anywhere; user-select: all; }
+.rsm-shell .rsm-field-label { font-size: 12px; color: #64758a; margin: 6px 0 3px; }
+.rsm-shell .rsm-state { display: inline-block; padding: 4px 7px; }
+.rsm-shell .rsm-empty { color: #66788a; text-align: center; padding: 24px; }
+.rsm-shell .rsm-footnote { font-size: 12px; color: #64748b; line-height: 1.55; }
+.rsm-shell .rsm-diagnostic { max-height: 420px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+.rsm-shell .rsm-detail { margin: 12px 0 0; }
+.rsm-shell .rsm-detail summary { cursor: pointer; color: #2677ad; font-weight: 600; }
+.rsm-shell .rsm-results-grid { margin: 0; }
+.rsm-shell .rsm-results-grid dt { color: #62768a; font-size: 12px; font-weight: normal; margin-bottom: 4px; }
+.rsm-shell .rsm-results-grid dd { margin: 0 0 16px; font-weight: 600; overflow-wrap: anywhere; }
+.rsm-shell .rsm-table td { vertical-align: middle; }
+@media (max-width: 991px) {
+  .rsm-shell .rsm-verification { border-left: 0; border-top: 1px solid #e6ebf1; padding: 17px 0 0; margin-top: 16px; min-height: 0; }
+}
+@media (max-width: 767px) {
+  .rsm-shell { padding: 0; }
+  .rsm-shell .rsm-heading h1 { font-size: 20px; }
+  .rsm-shell .rsm-metric { min-height: auto; }
+  .rsm-shell .rsm-tabs > li > a { padding: 9px 10px; font-size: 12px; }
+  .rsm-shell .rsm-card .panel-body { padding: 14px; }
+  .rsm-shell .rsm-reseller-body { padding: 14px; }
+}
+
+.rsm-shell .rsm-rotate-form {margin-top:16px;padding-top:12px;border-top:1px dashed #d2dde8;}
+.rsm-shell .rsm-rotate-form label {display:flex;gap:9px;align-items:flex-start;font-size:12px;font-weight:normal;color:#56677b;line-height:1.6;margin-bottom:9px;}
+.rsm-shell .rsm-rotate-form input {margin-top:3px;flex-shrink:0;}
+.rsm-shell .rsm-general-ownership { margin-top:20px; padding:18px; background:#f8fafc; border:1px solid #e1e8f0; border-radius:5px; }
+.rsm-shell .rsm-general-ownership .rsm-field-label {margin-top:12px;}
+.rsm-shell .rsm-verify-general {margin-top:14px;}
+.rsm-shell .rsm-auth-panel {border-top:1px solid #e6ebf1;margin-top:24px;padding:20px 4px 4px;}
+.rsm-shell .rsm-auth-panel h4 {font-size:14px;font-weight:600;margin:0 0 9px}
+.rsm-shell .rsm-auth-form {display:block;padding:12px 0 4px}
+.rsm-shell .rsm-auth-form .form-group {margin-bottom:0;max-width:420px}
+.rsm-shell .rsm-auth-form button[type="submit"] {margin-top:12px}
+.rsm-shell .rsm-auth-provision {margin-top:18px;padding:14px 16px;border:1px solid #e2e8f0;border-radius:5px;background:#f8fafc}
+.rsm-shell .rsm-auth-provision label {display:flex;gap:10px;align-items:flex-start;font-size:13px;font-weight:normal;line-height:1.5;margin:0 0 10px}
+.rsm-shell .rsm-auth-provision label input {margin:3px 0 0;flex-shrink:0}
+.rsm-shell .rsm-auth-report {margin-top:20px;padding:20px;border:1px solid #dce3ea;border-radius:5px;background:#fbfcff;overflow-wrap:anywhere}
+.rsm-shell .rsm-auth-checks dt {font-weight:600;font-size:13px;margin-top:12px}
+.rsm-shell .rsm-auth-checks dd {margin:6px 0 16px;line-height:1.6}
+.rsm-shell .rsm-reseller-body button { min-height:32px; }
+.rsm-shell .rsm-reseller-body input:focus-visible, .rsm-shell .rsm-reseller-body button:focus-visible {outline:2px solid #196eb2;outline-offset:2px;}
+.rsm-shell .rsm-reseller-body .rsm-code,.rsm-shell .rsm-reseller-body code {overflow-wrap:anywhere;word-break:break-word;}
+@media (max-width:991px) {.rsm-shell .rsm-verification {padding:18px 0 0;border-left:0;border-top:1px solid #e6ebf1;} .rsm-shell .rsm-reseller-body {padding:18px;} }
+@media (max-width:767px) {.rsm-shell {padding:0 8px;} .rsm-shell .rsm-reseller-body {padding:16px;} .rsm-shell .rsm-auth-panel {padding:18px 0 0;} .rsm-shell .rsm-auth-form .form-group,.rsm-shell .rsm-auth-form button {width:100%;max-width:none;} .rsm-shell .rsm-auth-report {padding:14px;} }
+
+/* RSM 1.0: actionable, accessible admin dashboard. No JavaScript/unload listeners. */
+.rsm-shell .rsm-health {border:1px solid #d4e0eb;border-left:4px solid #256e9e;border-radius:5px;background:#f6f9fc;padding:16px 19px;margin-bottom:20px;line-height:1.65}
+.rsm-shell .rsm-health h2 {font-size:17px;font-weight:650;margin:0 0 7px;color:#243f5a}
+.rsm-shell .rsm-health p {margin:5px 0;color:#38546e}
+.rsm-shell .rsm-health--attention {border-left-color:#af6a18;background:#fffbf3}
+.rsm-shell .rsm-health--ready {border-left-color:#2b7950;background:#f4faf6}
+.rsm-shell .rsm-health a {text-decoration:underline}
+.rsm-shell .rsm-metric {border-radius:5px}
+.rsm-shell .rsm-metric--ready {border-top:3px solid #317653}
+.rsm-shell .rsm-metric--attention {border-top:3px solid #b67b28}
+.rsm-shell .rsm-metric--neutral {border-top:3px solid #6e8297}
+.rsm-shell .rsm-metric-sub {font-size:12px;color:#61758a;margin-top:5px;line-height:1.5}
+.rsm-shell .rsm-journey {display:grid;gap:10px;list-style:none;padding:0;margin:0}
+.rsm-shell .rsm-journey li {padding:12px 14px;border-radius:5px;border:1px solid #dbe4ed;background:#fff;line-height:1.6}
+.rsm-shell .rsm-journey strong {display:block;margin-bottom:3px;color:#2d455f}
+.rsm-shell .rsm-journey .rsm-step-index {display:inline-block;min-width:23px;text-align:center;border-radius:100%;border:1px solid #b2c5d8;color:#3b6688;margin-right:8px;font-weight:bold;font-size:12px}
+.rsm-shell .rsm-journey a {text-decoration:underline}
+.rsm-shell .rsm-next {margin:0 0 18px;padding:12px 15px;border:1px solid #d3e2ed;border-left:3px solid #3b789b;border-radius:4px;background:#f5f9fc;line-height:1.6;color:#2e4d66}
+.rsm-shell .rsm-next--ready {border-left-color:#357d55;background:#f4faf6}
+.rsm-shell .rsm-next--attention {border-left-color:#b27a2a;background:#fffbf3}
+.rsm-shell .rsm-next strong {display:block;margin-bottom:3px}
+.rsm-shell .rsm-next p {margin:0}
+.rsm-shell .rsm-next a {text-decoration:underline}
+.rsm-shell .rsm-field-tip {border:0;border-bottom:1px dotted #4a7191;cursor:help;color:#285d84;font-size:12px;background:none;padding:0 2px;white-space:nowrap}
+.rsm-shell .rsm-field-tip:focus-visible,.rsm-shell .rsm-journey a:focus-visible,.rsm-shell a:focus-visible,.rsm-shell summary:focus-visible {outline:2px solid #196eb2;outline-offset:2px}
+.rsm-shell .rsm-help {max-width:720px}
+.rsm-shell .rsm-help strong {color:#34536a}
+.rsm-shell .rsm-mini-note {color:#5c7185;font-size:12px;margin:8px 0 0;line-height:1.5}
+@media(max-width:767px) {
+ .rsm-shell .rsm-health {padding:13px}
+ .rsm-shell .rsm-journey li {padding:10px 12px}
+ .rsm-shell .rsm-metric .panel-body {padding:14px}
+}
+
+</style>
+
+<section class="rsm-shell" aria-label="Reseller System Mail Manager">
+  <header class="rsm-heading">
+    <h1>Reseller System Mail Manager</h1>
+    <p class="rsm-lead">Sender policies, domain verification and SPF/DKIM/DMARC audits for WHM. Developed by arsamnet.com.</p>
+  </header>
+
+  <div class="rsm-scope" role="note">
+    <strong>RSM-only notifications.</strong> The global and reseller rules below do not modify native cPanel/iContact notifications.
+    <details><summary>What this plugin currently changes</summary>
+      <p>Only RSM-created messages invoked through its privileged notification command can use these sender policies.
+      Customer email, Exim routing, and native cPanel notifications are not modified.</p>
+    </details>
+  </div>
+
+  <ul class="nav nav-tabs rsm-tabs" role="navigation" aria-label="Plugin sections">
+    <li class="[% IF rsm.tab == 'dashboard' %]active[% END %]"><a href="?tab=dashboard" [% IF rsm.tab == 'dashboard' %]aria-current="page"[% END %]>Overview</a></li>
+    <li class="[% IF rsm.tab == 'resellers' %]active[% END %]"><a href="?tab=resellers" [% IF rsm.tab == 'resellers' %]aria-current="page"[% END %]>Reseller policies</a></li>
+    <li class="[% IF rsm.tab == 'dns' %]active[% END %]"><a href="?tab=dns" [% IF rsm.tab == 'dns' %]aria-current="page"[% END %]>DNS &amp; Policy preview</a></li>
+  </ul>
+
+  [% IF rsm.flash %]
+    <div class="alert [% IF rsm.flash.match('^Error:') %]alert-danger[% ELSE %]alert-success[% END %]" role="status">[% rsm.flash | html %]</div>
+  [% END %]
+
+  [% IF rsm.tab == 'dashboard' %]
+    <div class="rsm-health [% IF NOT rsm.enabled OR rsm.action_needed OR rsm.settings.default_sender_verified != '1' %]rsm-health--attention[% ELSE %]rsm-health--ready[% END %]" role="status">
+      <h2>RSM configuration status</h2>
+      [% IF NOT rsm.enabled %]
+        <p><strong>Global RSM sender rules are disabled.</strong> Enable them below before testing RSM-created notifications.</p>
+      [% ELSIF rsm.action_needed %]
+        <p><strong>Action needed for [% rsm.action_needed | html %] reseller(s).</strong> [% rsm.ready | html %] have a stored verified and enabled policy; use the <a href="?tab=resellers">guided reseller actions</a> to finish the others.</p>
+      [% ELSE %]
+        <p><strong>All [% rsm.total | html %] reseller policies are enabled and verified.</strong> This is a stored ownership/policy status, not a guarantee of SPF/DKIM/DMARC or inbox delivery.</p>
+      [% END %]
+      [% IF rsm.settings.default_sender_verified != '1' %]
+        <p><strong>Fallback sender is not verified.</strong> Accounts without a verified reseller policy will not receive a fallback sender from RSM. <a href="#rsm-general-ownership">Complete fallback ownership</a> only if you need it.</p>
+      [% END %]
+    </div>
+    <div class="row" aria-label="RSM policy overview">
+      <div class="col-sm-6 col-lg-3"><div class="panel panel-default rsm-metric rsm-metric--ready"><div class="panel-body">
+        <div class="rsm-metric-label">Verified &amp; enabled resellers</div>
+        <div class="rsm-metric-value">[% rsm.ready | html %] / [% rsm.total | html %]</div>
+        <div class="rsm-metric-sub">Stored ownership proof and sender policy</div>
+      </div></div></div>
+      <div class="col-sm-6 col-lg-3"><div class="panel panel-default rsm-metric rsm-metric--attention"><div class="panel-body">
+        <div class="rsm-metric-label">Resellers needing action</div>
+        <div class="rsm-metric-value">[% rsm.action_needed | html %]</div>
+        <div class="rsm-metric-sub">[% rsm.unconfigured | html %] not configured · [% rsm.needs_dns | html %] awaiting ownership · [% rsm.paused | html %] paused</div>
+      </div></div></div>
+      <div class="col-sm-6 col-lg-3"><div class="panel panel-default rsm-metric rsm-metric--neutral"><div class="panel-body">
+        <div class="rsm-metric-label">Accounts under ready reseller rules</div>
+        <div class="rsm-metric-value">[% rsm.covered_accounts | html %] / [% rsm.accounts_total | html %]</div>
+        <div class="rsm-metric-sub">Based on current WHM account ownership</div>
+      </div></div></div>
+      <div class="col-sm-6 col-lg-3"><div class="panel panel-default rsm-metric rsm-metric--neutral"><div class="panel-body">
+        <div class="rsm-metric-label">Global fallback ownership</div>
+        <div class="rsm-metric-value rsm-value-text">[% IF rsm.settings.default_sender_verified == '1' %]Verified[% ELSE %]Needs verification[% END %]</div>
+        <div class="rsm-metric-sub">Only for RSM-authored notifications; native cPanel mail unchanged</div>
+      </div></div></div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="panel panel-default rsm-card">
+          <div class="panel-heading">Global RSM settings</div>
+          <div class="panel-body">
+            <p class="rsm-intro">Choose the fallback identity for messages created by RSM. This does not set the sender of all WHM notifications.</p>
+            <form method="post" class="rsm-form">
+              <input type="hidden" name="csrf" value="[% rsm.csrf | html %]">
+              <input type="hidden" name="action" value="save_general">
+              <div class="form-group rsm-field">
+                <label for="rsm-default-sender">Default sender address <span class="rsm-field-tip" tabindex="0" title="A mailbox owned by your organization, used only as the fallback for RSM-created messages." aria-label="Help: Global fallback sender">What is this?</span></label>
+                <input id="rsm-default-sender" class="form-control" type="email" name="email" maxlength="254" required aria-describedby="rsm-help-default-sender" title="Fallback mailbox owned by a domain you control. Requires DNS ownership verification." value="[% rsm.settings.default_sender | html %]">
+                <span class="rsm-help" id="rsm-help-default-sender">Enter a real mailbox at a domain you control. Used only when no verified reseller rule applies. Saving a new address resets fallback verification and requires a TXT record.</span>
+              </div>
+              <div class="checkbox">
+                <label for="rsm-global-enabled"><input type="checkbox" id="rsm-global-enabled" name="enabled" value="1" aria-describedby="rsm-help-global-enabled" title="Enable RSM sender-policy evaluation; native cPanel notifications are never intercepted." [% IF rsm.enabled %]checked[% END %]> Enable sender rules for RSM-originated notifications</label>
+              </div>
+              <span class="rsm-help" id="rsm-help-global-enabled">This switch applies only to notifications created by RSM. It does not change the sender of native WHM/cPanel emails.</span>
+              <p class="rsm-footnote">Currently [% IF rsm.enabled %]<strong>enabled</strong>[% ELSE %]<strong>disabled</strong>[% END %]; no native notification interception is installed.</p>
+              <button type="submit" class="btn btn-primary">Save global settings</button>
+            </form>
+            <div class="rsm-general-ownership" id="rsm-general-ownership">
+              <strong>Fallback sender DNS ownership:</strong>
+              [% IF rsm.settings.default_sender_verified == '1' %]
+                <span class="label label-success">Verified</span>
+              [% ELSE %]
+                <span class="label label-warning">Verification required before use</span>
+              [% END %]
+              [% IF rsm.default_challenge_name AND rsm.default_challenge_value %]
+                <p class="rsm-footnote">Publish this TXT alongside any existing ownership TXT records, then verify. Existing reseller policy verification is unaffected.</p>
+                <div class="rsm-field-label">TXT name</div><code class="rsm-code">[% rsm.default_challenge_name | html %]</code>
+                [% IF rsm.settings.default_sender_verified == '1' %]<details class="rsm-detail"><summary>Show fallback TXT challenge</summary>[% END %]
+                <div class="rsm-field-label">TXT value</div><code class="rsm-code">[% rsm.default_challenge_value | html %]</code>
+                [% IF rsm.settings.default_sender_verified == '1' %]</details>[% END %]
+                <form method="post" class="rsm-verify-general">
+                  <input type="hidden" name="csrf" value="[% rsm.csrf | html %]">
+                  <input type="hidden" name="action" value="verify_general">
+                  <button type="submit" class="btn btn-default btn-sm">Verify fallback TXT</button>
+                </form>
+                <form method="post" class="rsm-rotate-form">
+                  <input type="hidden" name="csrf" value="[% rsm.csrf | html %]">
+                  <input type="hidden" name="action" value="rotate_challenge">
+                  <input type="hidden" name="scope" value="general">
+                  <label><input type="checkbox" name="confirm" value="yes" required title="Danger: resets fallback ownership verification and requires a new TXT record."> Revoke the previous fallback DNS proof and generate a new challenge.</label>
+                  <button type="submit" class="btn btn-default btn-sm">Rotate fallback challenge</button>
+                </form>
+              [% ELSE %]
+                [% IF rsm.settings.default_sender %]
+                  <p class="rsm-footnote">A fallback address is already saved, but no DNS ownership challenge exists yet (for example, after upgrading an older installation). Click <strong>Save global settings</strong> above without changing the address to generate its TXT challenge, publish that record, and verify ownership. Until then, fallback sending is blocked; verified reseller rules are unaffected.</p>
+                [% ELSE %]
+                  <p class="rsm-footnote">Enter a legitimate fallback email address above and save to create its DNS ownership challenge. Publish the TXT record and verify before using fallback sending.</p>
+                [% END %]
+              [% END %]
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="panel panel-default rsm-card">
+          <div class="panel-heading">What should I do next?</div>
+          <div class="panel-body">
+            <ol class="rsm-journey" aria-label="Setup and verification sequence">
+              <li>
+                <strong><span class="rsm-step-index">1</span> [% IF rsm.enabled %]Global rules enabled[% ELSE %]Enable the global switch[% END %]</strong>
+                [% IF rsm.enabled %]Enabled for RSM-created notifications.[% ELSE %]Choose a valid fallback email and check the global enable switch on the left, then save.[% END %]
+              </li>
+              <li>
+                <strong><span class="rsm-step-index">2</span> Configure each reseller</strong>
+                [% IF rsm.unconfigured %]<a href="?tab=resellers">[% rsm.unconfigured | html %] reseller(s) need an address</a>.[% ELSE %]Sender addresses are saved for all discovered resellers.[% END %]
+                Saving creates a per-domain TXT ownership challenge.
+              </li>
+              <li>
+                <strong><span class="rsm-step-index">3</span> Publish and verify DNS ownership</strong>
+                [% IF rsm.needs_dns %]<a href="?tab=resellers">[% rsm.needs_dns | html %] reseller(s) require verification</a>.[% ELSE %]No reseller is currently waiting for ownership proof.[% END %]
+                Verified ownership can be revoked if the TXT is removed.
+              </li>
+              <li>
+                <strong><span class="rsm-step-index">4</span> Enable, audit and preview</strong>
+                [% IF rsm.paused %]<a href="?tab=resellers">[% rsm.paused | html %] verified rule(s) are paused</a>.[% ELSE %]Review the <a href="?tab=resellers">reseller policies</a>.[% END %]
+                Then inspect SPF/DKIM/DMARC and <a href="?tab=dns">preview the effective sender</a>.
+              </li>
+            </ol>
+            <p class="rsm-mini-note">TXT verification and DNS auditing do not send email. A live SPF/DKIM/DMARC result must be confirmed separately with an authorized message.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel panel-default rsm-card">
+      <div class="panel-heading">Recent administrative activity</div>
+      <div class="table-responsive">
+        <table class="table table-striped table-hover rsm-table">
+          <thead><tr><th scope="col">Time (UTC)</th><th scope="col">Action</th><th scope="col">Account / reseller</th><th scope="col">Result</th></tr></thead>
+          <tbody>
+            [% IF rsm.events.size %]
+              [% FOREACH event IN rsm.events %]
+                <tr><td>[% event.ts | html %]</td><td>[% event.action | html %]</td><td>[% event.target | html %]</td><td>[% event.result | html %]</td></tr>
+              [% END %]
+            [% ELSE %]
+              <tr><td colspan="4" class="rsm-empty">No administrative activity recorded yet.</td></tr>
+            [% END %]
+          </tbody>
+        </table>
+      </div>
+      <div class="panel-body"><p class="rsm-footnote">Orphaned reseller policies: [% IF rsm.orphan_configs.size %][% rsm.orphan_configs.join(', ') | html %][% ELSE %]None[% END %]. These are never applied to another reseller.</p></div>
+    </div>
+
+  [% ELSIF rsm.tab == 'resellers' %]
+    <div class="panel panel-default rsm-card">
+      <div class="panel-heading">Reseller sender policies</div>
+      <div class="panel-body">
+        <p class="rsm-intro">Configure each reseller independently. A sender remains inactive until its public DNS challenge is verified, even if the rule is enabled.</p>
+        [% IF NOT rsm.rows.size %]
+          <div class="alert alert-warning">No resellers were found, or the WHM reseller inventory could not be loaded.</div>
+        [% END %]
+        [% FOREACH reseller IN rsm.rows %]
+          <article class="rsm-reseller" id="rsm-reseller-[% reseller.reseller | html %]" aria-label="Policy for [% reseller.reseller | html %]">
+            <div class="rsm-reseller-header">
+              <div><h3>[% reseller.reseller | html %]</h3><span class="text-muted">[% reseller.accounts | html %] cPanel account(s)</span></div>
+              <div>
+                [% IF reseller.enabled AND reseller.verified %]
+                  <span class="label label-success rsm-state">Verified and enabled</span>
+                [% ELSIF reseller.verified %]
+                  <span class="label label-default rsm-state">Verified, disabled</span>
+                [% ELSIF reseller.email %]
+                  <span class="label label-warning rsm-state">Verification required</span>
+                [% ELSE %]
+                  <span class="label label-default rsm-state">Not configured</span>
+                [% END %]
+              </div>
+            </div>
+            <div class="rsm-reseller-body">
+              [% IF NOT reseller.email %]
+                <div class="rsm-next rsm-next--attention"><strong>Next: Save a sender</strong><p>Enter a mailbox at a domain you control, enable the rule if desired, and save to create an ownership TXT challenge.</p></div>
+              [% ELSIF NOT reseller.verified %]
+                <div class="rsm-next rsm-next--attention"><strong>Next: Verify DNS ownership</strong><p>Publish the TXT record shown below, allow DNS propagation, then select <strong>Verify public DNS</strong>. Until verified, this sender cannot be used.</p></div>
+              [% ELSIF NOT reseller.enabled %]
+                <div class="rsm-next rsm-next--attention"><strong>Next: Enable this policy</strong><p>Ownership proof is saved, but the rule is paused. Tick <strong>Enable this rule</strong> and save if you intend to use it.</p></div>
+              [% ELSE %]
+                <div class="rsm-next rsm-next--ready"><strong>Ownership verified; sender policy enabled</strong><p>Next, run the <strong>SPF/DKIM/DMARC audit</strong> below and <a href="?tab=dns">preview a cPanel account</a> before any authorized test send. Verification is not proof of message authentication.</p></div>
+              [% END %]
+              <div class="row">
+                <div class="col-md-7">
+                  <form method="post" class="rsm-form">
+                    <input type="hidden" name="csrf" value="[% rsm.csrf | html %]">
+                    <input type="hidden" name="tab" value="resellers">
+                    <input type="hidden" name="action" value="save_reseller">
+                    <input type="hidden" name="reseller" value="[% reseller.reseller | html %]">
+                    <div class="form-group">
+                      <label for="rsm-sender-[% reseller.reseller | html %]">Sender email address <span class="rsm-field-tip" tabindex="0" title="Choose a sender mailbox on a domain you control for this reseller." aria-label="Help: Reseller sender email">What is this?</span></label>
+                      <input class="form-control" id="rsm-sender-[% reseller.reseller | html %]" type="email" name="email" maxlength="254" required aria-describedby="rsm-help-sender-[% reseller.reseller | html %]" title="Custom sender for this reseller. Changing it revokes existing ownership verification." value="[% reseller.email | html %]" placeholder="sender@example.org">
+                      <span class="rsm-help" id="rsm-help-sender-[% reseller.reseller | html %]">Enter an email address on a domain you own, then save. A TXT ownership record will be generated. Editing the address requires new verification.</span>
+                    </div>
+                    <div class="checkbox">
+                      <label><input type="checkbox" name="enabled" value="1" aria-describedby="rsm-help-enabled-[% reseller.reseller | html %]" title="Enables this reseller sender after the domain has been verified." [% IF reseller.enabled %]checked[% END %]> Enable this rule after verification</label>
+                      <span class="rsm-help" id="rsm-help-enabled-[% reseller.reseller | html %]">When unchecked, the saved policy is paused. Checking this does not bypass TXT ownership verification.</span>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save sender policy</button>
+                  </form>
+                </div>
+                <div class="col-md-5">
+                  <div class="rsm-verification">
+                    <h4>Domain ownership</h4>
+                    [% IF reseller.email AND reseller.challenge_name AND reseller.challenge_value %]
+                      <p class="rsm-footnote">Create this public TXT record at the DNS provider for the sender domain:</p>
+                      <div class="rsm-challenge">
+                        <div class="rsm-field-label">TXT record name</div><code>[% reseller.challenge_name | html %]</code>
+                        [% IF reseller.verified %]<details class="rsm-detail"><summary>Show current ownership TXT value</summary>[% END %]
+                        <div class="rsm-field-label">TXT record value</div><code>[% reseller.challenge_value | html %]</code>
+                        [% IF reseller.verified %]</details>[% END %]
+                      </div>
+                      <form method="post">
+                        <input type="hidden" name="csrf" value="[% rsm.csrf | html %]">
+                        <input type="hidden" name="tab" value="resellers">
+                        <input type="hidden" name="action" value="verify">
+                        <input type="hidden" name="reseller" value="[% reseller.reseller | html %]">
+                        <button type="submit" class="btn btn-default btn-sm">Verify public DNS</button>
+                      </form>
+                      [% IF reseller.verified %]<p class="rsm-help">Domain ownership verified; inspect SPF/DKIM before sending.</p>[% END %]
+                      <form method="post" class="rsm-rotate-form">
+                        <input type="hidden" name="csrf" value="[% rsm.csrf | html %]">
+                        <input type="hidden" name="action" value="rotate_challenge">
+                        <input type="hidden" name="scope" value="reseller">
+                        <input type="hidden" name="tab" value="resellers">
+                        <input type="hidden" name="reseller" value="[% reseller.reseller | html %]">
+                        <label><input type="checkbox" name="confirm" value="yes" required title="Danger: revoke this saved ownership proof and require a fresh TXT verification."> Revoke old TXT proof and disable this identity until reverified.</label>
+                        <button type="submit" class="btn btn-default btn-sm">Rotate ownership challenge</button>
+                      </form>
+                    [% ELSE %]
+                      <p class="rsm-intro">Save a sender address to generate the TXT verification record.</p>
+                      <button type="button" class="btn btn-default btn-sm" disabled>Verify public DNS</button>
+                    [% END %]
+                  </div>
+                </div>
+              </div>
+
+              [% IF reseller.email %]
+                <div class="rsm-auth-panel">
+                  <h4>Sender-domain authentication audit</h4>
+                  <p class="rsm-footnote">Read-only public DNS checks for [% reseller.email | html %]. Enter the <strong>confirmed actual SMTP egress IP</strong>, not the website IP.</p>
+                  <form method="post" class="rsm-auth-form">
+                    <input type="hidden" name="csrf" value="[% rsm.csrf | html %]">
+                    <input type="hidden" name="tab" value="resellers">
+                    <input type="hidden" name="action" value="audit_reseller">
+                    <input type="hidden" name="reseller" value="[% reseller.reseller | html %]">
+                    <div class="form-group rsm-field">
+                      <label for="rsm-egress-[% reseller.reseller | html %]">Actual SMTP outbound IP <span class="rsm-field-tip" tabindex="0" title="The public IP of the outbound mail transport, not necessarily the website server." aria-label="Help: Outbound SMTP IP">What is this?</span></label>
+                      <input type="text" id="rsm-egress-[% reseller.reseller | html %]" name="ip" maxlength="45" class="form-control" aria-describedby="rsm-help-egress-[% reseller.reseller | html %]" title="Optional confirmed public mail egress IPv4 or IPv6 address, used for SPF diagnosis." value="[% IF rsm.audit_target == reseller.reseller %][% rsm.audit_ip | html %][% END %]" placeholder="e.g. 192.0.2.10">
+                      <span class="rsm-help" id="rsm-help-egress-[% reseller.reseller | html %]">Optional. Enter the verified outbound SMTP IPv4/IPv6 address to assess SPF. Leave blank if unknown; RSM will not guess or publish DNS records.</span>
+                    </div>
+                    <button class="btn btn-default btn-sm" type="submit">Check &amp; verify DNS</button>
+                  </form>
+                  [% IF reseller.verified %]
+                    <form method="post" class="rsm-auth-provision">
+                      <input type="hidden" name="csrf" value="[% rsm.csrf | html %]">
+                      <input type="hidden" name="tab" value="resellers">
+                      <input type="hidden" name="action" value="provision_reseller_dkim">
+                      <input type="hidden" name="reseller" value="[% reseller.reseller | html %]">
+                      <label><input type="checkbox" name="confirm" value="yes" required title="Explicit consent to provision a root-only key for RSM-signing; not a native Exim DKIM key."> I authorize creating/reusing a root-only DKIM signing key for this domain (RSM-only).</label>
+                      <button class="btn btn-default btn-sm" type="submit">Provision RSM DKIM key</button>
+                    </form>
+                  [% END %]
+                  [% IF rsm.audit_target == reseller.reseller AND rsm.provision_result %]
+                    <div class="alert alert-info rsm-auth-report">
+                      <strong>Publish this DKIM TXT at the authoritative DNS provider:</strong>
+                      <div class="rsm-field-label">Record name</div><code class="rsm-code">[% rsm.provision_result.dns_name | html %]</code>
+                      <div class="rsm-field-label">Record value</div><code class="rsm-code">[% rsm.provision_result.dns_value | html %]</code>
+                      <p class="rsm-footnote">Do not replace another DKIM selector. Verify the record by running the audit.</p>
+                    </div>
+                  [% END %]
+                  [% IF rsm.audit_target == reseller.reseller AND rsm.audit_result %]
+                    <div class="rsm-auth-report" role="status">
+                      <h4>Authentication DNS audit — [% rsm.audit_result.domain | html %]</h4>
+                      <p class="rsm-footnote">Checked UTC [% rsm.audit_result.checked_at | html %]. Selector [% rsm.audit_result.selector | html %]. Outbound IP [% IF rsm.audit_result.outbound_ip %][% rsm.audit_result.outbound_ip | html %][% ELSE %]not provided[% END %].</p>
+                      <dl class="rsm-auth-checks">
+                        <dt>Ownership — [% rsm.audit_result.ownership.status | html %]</dt>
+                        <dd>[% rsm.audit_result.ownership.message | html %]</dd>
+                        <dt>SPF — [% rsm.audit_result.spf.status | html %]</dt>
+                        <dd>[% rsm.audit_result.spf.message | html %]
+                          [% FOREACH record IN rsm.audit_result.spf.records %]<code class="rsm-code">[% record | html %]</code>[% END %]
+                          [% IF rsm.audit_result.spf.proposal %]
+                            <div class="rsm-field-label">Proposed [% rsm.audit_result.spf.proposal.action | html %] TXT: [% rsm.audit_result.spf.proposal.name | html %]</div>
+                            <code class="rsm-code">[% rsm.audit_result.spf.proposal.value | html %]</code>
+                            <p class="rsm-footnote">[% rsm.audit_result.spf.proposal.note | html %]</p>
+                          [% END %]
+                        </dd>
+                        <dt>DKIM — [% rsm.audit_result.dkim.status | html %]</dt>
+                        <dd>[% rsm.audit_result.dkim.message | html %]
+                          <p class="rsm-footnote">Real message signature: [% rsm.audit_result.dkim.signing | html %]. Selector: [% rsm.audit_result.dkim.name | html %]</p>
+                          [% IF rsm.audit_result.dkim.proposal %]
+                            <div class="rsm-field-label">Proposed TXT: [% rsm.audit_result.dkim.proposal.name | html %]</div>
+                            <code class="rsm-code">[% rsm.audit_result.dkim.proposal.value | html %]</code>
+                            <p class="rsm-footnote">[% rsm.audit_result.dkim.proposal.note | html %]</p>
+                          [% END %]
+                        </dd>
+                        <dt>DMARC — [% rsm.audit_result.dmarc.status | html %]</dt>
+                        <dd>[% rsm.audit_result.dmarc.message | html %]
+                          [% FOREACH record IN rsm.audit_result.dmarc.records %]<code class="rsm-code">[% record | html %]</code>[% END %]
+                          [% IF rsm.audit_result.dmarc.proposal %]
+                            <div class="rsm-field-label">Proposed TXT: [% rsm.audit_result.dmarc.proposal.name | html %]</div>
+                            <code class="rsm-code">[% rsm.audit_result.dmarc.proposal.value | html %]</code>
+                            <p class="rsm-footnote">[% rsm.audit_result.dmarc.proposal.note | html %]</p>
+                          [% END %]
+                        </dd>
+                      </dl>
+                      <p class="rsm-footnote"><strong>Summary:</strong> [% rsm.audit_result.summary | html %]. DNS checks do not prove live message authentication or inbox delivery. Check a delivered message's Authentication-Results.</p>
+                    </div>
+                  [% END %]
+                </div>
+              [% END %]
+            </div>
+          </article>
+        [% END %]
+      </div>
+    </div>
+
+  [% ELSIF rsm.tab == 'dns' %]
+    <div class="row">
+      <div class="col-md-7">
+        <div class="panel panel-default rsm-card">
+          <div class="panel-heading">Check email authentication records</div>
+          <div class="panel-body">
+            <p class="rsm-intro">Read public SPF, DKIM and DMARC records. No DNS changes or email deliveries are performed.</p>
+            <form method="post">
+              <input type="hidden" name="csrf" value="[% rsm.csrf | html %]">
+              <input type="hidden" name="tab" value="dns">
+              <input type="hidden" name="action" value="inspect">
+              <div class="form-group">
+                <label for="rsm-dns-email">Sender email address</label>
+                <input id="rsm-dns-email" class="form-control" type="email" name="email" maxlength="254" required aria-describedby="rsm-help-dns-email" title="Email whose domain is checked for public SPF/DKIM/DMARC records." value="[% rsm.form_email | html %]" placeholder="sender@example.org">
+                <span class="rsm-help" id="rsm-help-dns-email">The domain after @ determines which public DNS records to inspect. This check does not change records or send mail.</span>
+              </div>
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="form-group"><label for="rsm-dns-ip">Actual outbound SMTP IP (optional)</label>
+                    <input id="rsm-dns-ip" class="form-control" type="text" name="ip" maxlength="45" aria-describedby="rsm-help-dns-ip" title="Optional confirmed outbound mail server IPv4/IPv6, not an assumed website IP." value="[% rsm.form_ip | html %]" placeholder="IPv4 or IPv6">
+                    <span class="rsm-help" id="rsm-help-dns-ip">Optional. Use only the public SMTP egress IP verified from your mail transport. Any SPF suggestion requires manual review before publishing.</span>
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="form-group"><label for="rsm-dkim-selector">DKIM selector (optional)</label>
+                    <input id="rsm-dkim-selector" class="form-control" type="text" name="selector" aria-describedby="rsm-help-selector" title="The s= tag of a real DKIM signature; for RSM this is generally rsm2026." maxlength="63" value="[% rsm.form_selector | html %]" placeholder="e.g. default">
+                    <span class="rsm-help" id="rsm-help-selector">Optional. Enter the s= selector of a real DKIM-Signature (for RSM keys, often rsm2026). DNS alone does not confirm outgoing signing.</span>
+                  </div>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary">Inspect public DNS</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-5">
+        <div class="panel panel-default rsm-card">
+          <div class="panel-heading">Preview effective sender policy</div>
+          <div class="panel-body">
+            <p class="rsm-intro">Check account ownership and the effective RSM sender without sending mail.</p>
+            <form method="post">
+              <input type="hidden" name="csrf" value="[% rsm.csrf | html %]">
+              <input type="hidden" name="tab" value="dns">
+              <input type="hidden" name="action" value="preview">
+              <div class="form-group">
+                <label for="rsm-preview-account">cPanel account username</label>
+                <input id="rsm-preview-account" class="form-control" type="text" name="account" maxlength="16" required aria-describedby="rsm-help-preview-account" title="Existing cPanel account login, used to preview the current owner policy without sending email." value="[% rsm.form_account | html %]" placeholder="account_name">
+                <span class="rsm-help" id="rsm-help-preview-account">Enter an existing cPanel account username. RSM reads its current owner from WHM and previews the sender decision without sending mail or changing settings.</span>
+              </div>
+              <button type="submit" class="btn btn-default">Preview sender</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    [% IF rsm.dns_result %]
+      <div class="panel panel-default rsm-card" aria-label="DNS results">
+        <div class="panel-heading">DNS inspection results — [% rsm.dns_result.domain | html %]</div>
+        <div class="panel-body">
+          <div class="row">
+            <div class="col-md-6">
+              <dl class="rsm-results-grid">
+                <dt>SPF records</dt>
+                <dd>[% IF rsm.dns_result.spf_records.size %][% FOREACH record IN rsm.dns_result.spf_records %]<code class="rsm-code">[% record | html %]</code>[% END %][% ELSE %]Not found[% END %]</dd>
+                <dt>DMARC policy</dt><dd>[% rsm.dns_result.dmarc_policy | html %]</dd>
+                <dt>DKIM status</dt><dd>[% rsm.dns_result.dkim | html %]</dd>
+              </dl>
+            </div>
+            <div class="col-md-6">
+              <h4 style="font-size:14px;margin-top:0">Diagnostics and limitations</h4>
+              [% IF rsm.dns_result.warnings.size %]
+                <ul>[% FOREACH warning IN rsm.dns_result.warnings %]<li>[% warning | html %]</li>[% END %]</ul>
+              [% ELSE %]<p class="text-muted">No warnings reported by this limited diagnostic.</p>[% END %]
+            </div>
+          </div>
+          [% IF rsm.dns_result.suggested %]
+            <label>SPF candidate — review manually before any DNS change</label>
+            <code class="rsm-code">[% rsm.dns_result.suggested | html %]</code>
+          [% END %]
+          <p class="rsm-footnote" style="margin-top:14px">DNS inspection alone cannot establish live DKIM signing or SPF/DMARC alignment. Validate against a real signed message before using any proposed record.</p>
+          <details class="rsm-detail"><summary>Full technical results</summary><pre class="rsm-diagnostic">[% rsm.dns_output | html %]</pre></details>
+        </div>
+      </div>
+    [% END %]
+    [% IF rsm.preview_result %]
+      <div class="panel panel-default rsm-card" aria-label="Sender policy preview">
+        <div class="panel-heading">Policy preview — [% rsm.form_account | html %]</div>
+        <div class="panel-body">
+          <dl class="rsm-results-grid">
+            <dt>Effective RSM sender</dt>
+            <dd>[% IF rsm.preview_result.sender %]<code class="rsm-code">[% rsm.preview_result.sender | html %]</code>[% ELSE %]No override — caller behavior preserved[% END %]</dd>
+            <dt>Account owner</dt>
+            <dd>[% IF rsm.preview_result.owner %][% rsm.preview_result.owner | html %][% ELSE %]Not available[% END %]</dd>
+            <dt>Decision reason</dt><dd>[% rsm.preview_result.reason | html %]</dd>
+          </dl>
+          <p class="rsm-footnote">Preview does not send email and does not apply to native cPanel notification messages.</p>
+        </div>
+      </div>
+    [% END %]
+  [% END %]
+</section>
+[% END %]

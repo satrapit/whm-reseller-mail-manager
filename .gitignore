@@ -1,0 +1,27 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+*.log
+*.sqlite
+*.sqlite3
+.DS_Store
+.idea/
+.vscode/
+coverage/
+htmlcov/
+
+# Never commit privileged runtime keys, session artifacts or production backups
+*.pem
+*.key
+*.p12
+*.pfx
+*.bak
+*.pcap
+*.sql.gz
+*.tar.gz
+*.env.local
